@@ -26,12 +26,18 @@ console.log('Max bytes:', maxBytes);
 
 var s3 = new AWS.S3({
   apiVersion: '2006-03-01',
-  region: 'us-west-1',
-  accessKeyId: awsAccessKey,
-  secretAccessKey: awsSecret
+  // region: 'us-west-1',
+  // accessKeyId: awsAccessKey,
+  // secretAccessKey: awsSecret
 });
+var transformer = sharp()
+    .resize(800)
+    .on('info', function(info) {
+        console.log('Image height is ' + info.height);
+    });
 
-var fileStream = require('fs').createReadStream(source);
+
+var fileStream = require('fs').createReadStream(source).pipe(transformer);
 fileStream.on('error', (err)=>{
   console.log('File Error', err);
 });
@@ -78,17 +84,28 @@ gm(fileStream)
 //   .png()
 //   .toBuffer();
 
+
 // const roundedCornerResizer =
-  sharp()
-    .resize(resizeX, resizeY)
-    .composite([{
-      input: fileStream,
-      blend: 'dest-in'
-    }])
-    .png()
-    .toBuffer();
+//   sharp()
+//     .resize(resizeX, resizeY)
+//     .composite([{
+//       input: fileStream,
+//       blend: 'dest-in'
+//     }])
+//     .png()
+//     .toBuffer()
+// ;
 
-
+//
+// var adapter = require('../index')({
+//     bucket: bucketName,
+//     region: 'us-west-1',
+//     key: awsAccessKey,
+//     secret: awsSecret,
+//     Key: require('path').basename(source),
+//     Body: fileStream
+// });
+// var receiving = adapter.receive();
 
 
 

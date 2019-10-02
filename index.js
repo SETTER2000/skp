@@ -117,7 +117,7 @@ module.exports = function SkipperS3(globalOpts) {
       var maxBytesPerFile = s3ClientOpts.maxBytesPerFile || undefined;
       var region = s3ClientOpts.region || undefined;
       var Body = s3ClientOpts.Body || undefined;
-      console.log('Body:: ', Body);
+      // console.log('Body:: ', Body);
 
       var receiver = Writable({objectMode: true});
       receiver.once('error', (unusedErr) => {
