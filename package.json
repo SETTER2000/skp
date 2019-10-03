@@ -23,6 +23,7 @@
     "gm": "^1.23.1",
     "jimp": "^0.8.4",
     "mime": "2.4.2",
+    "mime-types": "^2.1.24",
     "sharp": "^0.23.1"
   },
   "devDependencies": {

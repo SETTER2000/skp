@@ -23,7 +23,7 @@ var AWS = require('aws-sdk');
  *         @property {Function} receive
  */
 
-module.exports = function SkipperS3(globalOpts) {
+module.exports = function Skp(globalOpts) {
   globalOpts = globalOpts || {};
 
   return {

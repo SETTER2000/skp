@@ -1,12 +1,12 @@
-var AWS = require('aws-sdk');
+// var AWS = require('aws-sdk');
 
 // Based on:
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#deleteObjects-property
 
-var source = '11.jpg';
+var source = 'Poale-Ell-Adam.jpg';
 var awsAccessKey = process.argv[2];
 var awsSecret = process.argv[3];
-var bucketName = 'patzi';
+var bucketName = 'paltos';
 
 console.log('Using AWS access key:', awsAccessKey);
 console.log('Using AWS secret:', awsSecret);

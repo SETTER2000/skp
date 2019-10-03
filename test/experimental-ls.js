@@ -1,4 +1,4 @@
-var AWS = require('aws-sdk');
+// var AWS = require('aws-sdk');
 
 // Based on:
 // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#listObjectsV2-property
@@ -11,7 +11,7 @@ var optionalPrefix = process.env.PREFIX || undefined;
 var optionalMaxKeys = undefined;
 var awsAccessKey = process.argv[2] || process.env.KEY;
 var awsSecret = process.argv[3] || process.env.SECRET;
-var bucketName = process.env.BUCKET || 'patzi';
+var bucketName = process.env.BUCKET || 'paltos';
 
 console.log('Using AWS access key:', awsAccessKey);
 console.log('Using AWS secret:', awsSecret);
