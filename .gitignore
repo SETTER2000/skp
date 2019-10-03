@@ -68,3 +68,5 @@ nbproject
 # misc
 ############################
 dump.rdb
+
+test/experimental-upload.js
