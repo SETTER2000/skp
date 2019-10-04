@@ -173,12 +173,12 @@ module.exports = function Skp(globalOpts) {
                             , resizeY = 800
                         ;
                         // console.log('incomingFileStream.fd::: ' , incomingFileStream.fd);
-                        sharp(incomingFileStream.fd)
+                        sharp(incomingFileStream._readableState.buffer)
                             .resize(resizeX, resizeY, {
                                 fit: sharp.fit.inside,
                                 withoutEnlargement: true
                             })
-                            .withMetadata()
+                            // .withMetadata()
                             .toFormat('jpeg')
                             .toBuffer((err, data, info)=>{
                                 if(err) {console.log('EWWWW:::' ,err);}
