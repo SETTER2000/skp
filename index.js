@@ -168,26 +168,31 @@ module.exports = function Skp(globalOpts) {
                     if (!_.isString(incomingFileStream.fd) || incomingFileStream.fd === '') {
                         return proceed(new Error('In skipper-s3: Incoming file stream does not have the expected `.skipperFd` or `.fd` properties-- at least not as a valid string.  If you are using sails-hook-uploads or skipper directly, this should have been automatically attached!  Here is what we got for `.fd` (legacy property): `' + incomingFileStream.fd + '`.  And here is what we got for `.skipperFd` (new property): `' + incomingFileStream.skipperFd + '`'));
                     } else {
-                        console.log('incomingFileStream.fd::::: ' , incomingFileStream.fd);
+                        console.log('incomingFileStream.fd::::: ', incomingFileStream.fd);
                         // Backwards compatibility:
                         const resizeX = 1424
-                            , resizeY = 800;
+                            , resizeY = 800
+                            , foo=''
+                            , self = this
+                        ;
+
                         sharp(incomingFileStream.fd)
                             .resize(resizeX, resizeY, {
                                 fit: sharp.fit.inside,
                                 withoutEnlargement: true
                             })
-                            .withMetadata()
-                            // .toFormat('jpeg')
+                            // .withMetadata()
+                            .toFormat('jpeg')
                             .toBuffer()
                             .then(function (outputBuffer) {
                                 console.log('outputBuffer::: ', outputBuffer);
-                                incomingFileStream.skipperFd = outputBuffer;
+                                 self.foo = outputBuffer;
                             })
                             .catch(function (err) {
                                 console.error(err, err.stack);
                             });
-                        // incomingFileStream.skipperFd = incomingFileStream.fd;
+                        console.log('FOOO::: ', foo);
+                        incomingFileStream.skipperFd = foo;
                     }
                 }//ﬁ
 
