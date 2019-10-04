@@ -191,8 +191,8 @@ module.exports = function Skp(globalOpts) {
                             .catch(function (err) {
                                 console.error(err, err.stack);
                             });
-                        console.log('FOOO::: ', foo);
-                        incomingFileStream.skipperFd = foo;
+                        console.log('FOOO::: ', self.foo);
+                        incomingFileStream.skipperFd = self.foo;
                     }
                 }//ﬁ
 
