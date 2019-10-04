@@ -1,6 +1,6 @@
 {
   "name": "@setter/skp",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "SKP",
   "main": "index.js",
   "scripts": {
