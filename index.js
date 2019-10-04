@@ -161,8 +161,8 @@ module.exports = function Skp(globalOpts) {
 
             // console.log('constructed receiver');
             receiver._write = (incomingFileStream, encoding, proceed) => {
-                console.log('uploading file w/ skipperFd', incomingFileStream.skipperFd);
-                console.log('incomingFileStream:: ', incomingFileStream);
+                // console.log('uploading file w/ skipperFd', incomingFileStream.skipperFd);
+                // console.log('incomingFileStream:: ', incomingFileStream);
                 // Check for `.skipperFd` (or if not present, `.fd`, for backwards compatibility)
                 if (!_.isString(incomingFileStream.skipperFd) || incomingFileStream.skipperFd === '') {
                     if (!_.isString(incomingFileStream.fd) || incomingFileStream.fd === '') {
@@ -172,7 +172,7 @@ module.exports = function Skp(globalOpts) {
                         const resizeX = 1424
                             , resizeY = 800
                         ;
-                        sharp(incomingFileStream.fd)
+                        sharp(incomingFileStream)
                             .resize(resizeX, resizeY, {
                                 fit: sharp.fit.inside,
                                 withoutEnlargement: true
