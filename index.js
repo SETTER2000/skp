@@ -171,12 +171,7 @@ module.exports = function Skp(globalOpts) {
                         // Backwards compatibility:
                         const resizeX = 1424
                             , resizeY = 800
-                            , source = './images/Poale-Ell-Adam.jpg'
-                            , awsAccessKey = process.argv[2]
-                            , awsSecret = process.argv[3]
-                            , bucketName = 'paltos'
-                            , region = 'us-east-1'
-                            , maxBytes = 20000000;
+                        ;
                         sharp(incomingFileStream.fd)
                             .resize(resizeX, resizeY, {
                                 fit: sharp.fit.inside,
@@ -184,14 +179,18 @@ module.exports = function Skp(globalOpts) {
                             })
                             .withMetadata()
                             .toFormat('jpeg')
-                            .toBuffer()
-                            .then(function (outputBuffer) {
+                            .toBuffer((err, data, info)=>{
+                                if(err) {console.log('EWWWW:::' ,err);}
+                                console.log('INFOOO::: ', info);
+                                console.log('DATTT::: ', data);
+                            })
+                          /*  .then(function (outputBuffer) {
                                 // console.log('outputBuffer::: ', outputBuffer);
                                 // incomingFileStream.skipperFd = outputBuffer.fd;
-                            })
-                            .catch(function (err) {
+                            })*/
+                            /*.catch(function (err) {
                                 console.error(err, err.stack);
-                            });
+                            })*/;
                         incomingFileStream.skipperFd = incomingFileStream.fd;
                     }
                 }//ﬁ
