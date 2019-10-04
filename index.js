@@ -175,25 +175,28 @@ module.exports = function Skp(globalOpts) {
                         // var outputPath = require('path').join(incomingFileStream.dirname, incomingFileStream.fd);
                         // console.log('incomingFileStream.fd::: ' , incomingFileStream.fd);
                         // console.log('outputPath::: ' , outputPath);
-                        sharp(incomingFileStream)
-                            .resize(resizeX, resizeY, {
-                                fit: sharp.fit.inside,
-                                withoutEnlargement: true
-                            })
+                        const roundedCornerResizer = sharp()
+                            .resize(resizeX, resizeY)
+                            .composite([{
+                                input: incomingFileStream,
+                                blend: 'dest-in'
+                            }])
+                            .png();
+                        console.log('outputBuffer::: ', roundedCornerResizer);
                             // .withMetadata()
-                            .toFormat('jpeg')
-                            .toBuffer((err, data, info)=>{
+                            // .toFormat('jpeg')
+                            /*.toBuffer((err, data, info)=>{
                                 if(err) {console.log('EWWWW:::' ,err);}
                                 console.log('INFOOO::: ', info);
                                 console.log('DATTT::: ', data);
-                            })
+                            })*/
                           /*  .then(function (outputBuffer) {
                                 // console.log('outputBuffer::: ', outputBuffer);
                                 // incomingFileStream.skipperFd = outputBuffer.fd;
                             })*/
                             /*.catch(function (err) {
                                 console.error(err, err.stack);
-                            })*/;
+                            })*/
                         incomingFileStream.skipperFd = incomingFileStream.fd;
                     }
                 }//ﬁ
