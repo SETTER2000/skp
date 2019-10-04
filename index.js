@@ -177,11 +177,11 @@ module.exports = function Skp(globalOpts) {
                                 withoutEnlargement: true
                             })
                             .withMetadata()
-                            .toFormat('jpeg')
+                            // .toFormat('jpeg')
                             .toBuffer()
                             .then(function (outputBuffer) {
                                 console.log('outputBuffer::: ', outputBuffer);
-                                incomingFileStream.skipperFd = outputBuffer.fd;
+                                incomingFileStream.skipperFd = outputBuffer;
                             })
                             .catch(function (err) {
                                 console.error(err, err.stack);
