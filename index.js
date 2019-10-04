@@ -168,6 +168,7 @@ module.exports = function Skp(globalOpts) {
                     if (!_.isString(incomingFileStream.fd) || incomingFileStream.fd === '') {
                         return proceed(new Error('In skipper-s3: Incoming file stream does not have the expected `.skipperFd` or `.fd` properties-- at least not as a valid string.  If you are using sails-hook-uploads or skipper directly, this should have been automatically attached!  Here is what we got for `.fd` (legacy property): `' + incomingFileStream.fd + '`.  And here is what we got for `.skipperFd` (new property): `' + incomingFileStream.skipperFd + '`'));
                     } else {
+                        console.log('incomingFileStream.fd::::: ' , incomingFileStream.fd);
                         // Backwards compatibility:
                         const resizeX = 1424
                             , resizeY = 800;
