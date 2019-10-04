@@ -46,16 +46,15 @@ const fileStream = fs.readFile(source, function (err, data) {
                     Bucket: bucketName,
                     Key: path.basename(source),
                     Body: outputBuffer
-                }, (err, data)=>{
+                }, (err, data) => {
                     if (err) {
                         console.error('s3 send error:', err);
                     } else {
                         console.log('s3 send success!', data);
                     }
                 });
-            }).catch(
-            function (err) {
-                console.error(err, err.stack);
+            })
+            .catch(function (err) { console.error(err, err.stack);
             });
     }
 });

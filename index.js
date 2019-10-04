@@ -2,11 +2,12 @@
  * Module dependencies
  */
 
-var Writable = require('stream').Writable;
-var _ = require('@sailshq/lodash');
-var flaverr = require('flaverr');
-var mime = require('mime');
-var AWS = require('aws-sdk');
+const Writable = require('stream').Writable;
+const _ = require('@sailshq/lodash');
+const flaverr = require('flaverr');
+const sharp = require('sharp');
+const mime = require('mime');
+const AWS = require('aws-sdk');
 
 /**
  * skipper-s3
@@ -105,14 +106,21 @@ module.exports = function Skp(globalOpts) {
                         Key: options.Key,
                         Body: options.Body
                     }), (err, data) => {
-                        if (err) { return done(err); }
+                        if (err) {
+                            return done(err);
+                        }
                         let formattedResults;
                         try {
                             formattedResults = options;
                             formattedResults.ETag = data.ETag;
                             // Вернёт URL только что загруженой картинки
-                            _buildS3Client(globalOpts).getSignedUrl('getObject', {Bucket: options.Bucket, Key: options.Key}, (err, data) => {
-                                if (err) {  return done(err);}
+                            _buildS3Client(globalOpts).getSignedUrl('getObject', {
+                                Bucket: options.Bucket,
+                                Key: options.Key
+                            }, (err, data) => {
+                                if (err) {
+                                    return done(err);
+                                }
                                 formattedResults.URL = data;
                                 return done(undefined, formattedResults);
                             });
@@ -161,7 +169,24 @@ module.exports = function Skp(globalOpts) {
                         return proceed(new Error('In skipper-s3: Incoming file stream does not have the expected `.skipperFd` or `.fd` properties-- at least not as a valid string.  If you are using sails-hook-uploads or skipper directly, this should have been automatically attached!  Here is what we got for `.fd` (legacy property): `' + incomingFileStream.fd + '`.  And here is what we got for `.skipperFd` (new property): `' + incomingFileStream.skipperFd + '`'));
                     } else {
                         // Backwards compatibility:
-                        incomingFileStream.skipperFd = incomingFileStream.fd;
+                        const resizeX = 1424
+                            , resizeY = 800;
+                        sharp(incomingFileStream.fd)
+                            .resize(resizeX, resizeY, {
+                                fit: sharp.fit.inside,
+                                withoutEnlargement: true
+                            })
+                            .withMetadata()
+                            .toFormat('jpeg')
+                            .toBuffer()
+                            .then(function (outputBuffer) {
+                                console.log('outputBuffer::: ', outputBuffer);
+                                incomingFileStream.skipperFd = outputBuffer.fd;
+                            })
+                            .catch(function (err) {
+                                console.error(err, err.stack);
+                            });
+                        // incomingFileStream.skipperFd = incomingFileStream.fd;
                     }
                 }//ﬁ
 
@@ -170,47 +195,50 @@ module.exports = function Skp(globalOpts) {
                 incomingFileStream.once('error', (unusedErr) => {
                     // console.log('ERROR ON incoming readable file stream in Skipper S3 adapter (%s) ::', incomingFileStream.filename, unusedErr);
                 });//œ
-                _uploadFile(incomingFd, incomingFileStream, (progressInfo) => {
-                    bytesWrittenByFd[incomingFd] = progressInfo.written;
-                    incomingFileStream.byteCount = progressInfo.written;//« used by Skipper core
-                    let totalBytesWrittenForThisUpstream = 0;
-                    for (let fd in bytesWrittenByFd) {
-                        totalBytesWrittenForThisUpstream += bytesWrittenByFd[fd];
-                    }//∞
-                    // console.log('maxBytesPerUpstream',maxBytesPerUpstream);
-                    // console.log('bytesWrittenByFd',bytesWrittenByFd);
-                    // console.log('totalBytesWrittenForThisUpstream',totalBytesWrittenForThisUpstream);
-                    if (maxBytesPerUpstream && totalBytesWrittenForThisUpstream > maxBytesPerUpstream) {
-                        wasMaxBytesPerUpstreamQuotaExceeded = true;
-                        return false;
-                    } else if (maxBytesPerFile && bytesWrittenByFd[incomingFd] > maxBytesPerFile) {
-                        wasMaxBytesPerFileQuotaExceeded = true;
-                        return false;
-                    } else {
-                        if (s3ClientOpts.onProgress) {
-                            s3ClientOpts.onProgress(progressInfo);
+                _uploadFile(incomingFd, incomingFileStream,
+                    (progressInfo) => {
+                        bytesWrittenByFd[incomingFd] = progressInfo.written;
+                        incomingFileStream.byteCount = progressInfo.written;//« used by Skipper core
+                        let totalBytesWrittenForThisUpstream = 0;
+                        for (let fd in bytesWrittenByFd) {
+                            totalBytesWrittenForThisUpstream += bytesWrittenByFd[fd];
+                        }//∞
+                        // console.log('maxBytesPerUpstream',maxBytesPerUpstream);
+                        // console.log('bytesWrittenByFd',bytesWrittenByFd);
+                        // console.log('totalBytesWrittenForThisUpstream',totalBytesWrittenForThisUpstream);
+                        if (maxBytesPerUpstream && totalBytesWrittenForThisUpstream > maxBytesPerUpstream) {
+                            wasMaxBytesPerUpstreamQuotaExceeded = true;
+                            return false;
+                        } else if (maxBytesPerFile && bytesWrittenByFd[incomingFd] > maxBytesPerFile) {
+                            wasMaxBytesPerFileQuotaExceeded = true;
+                            return false;
                         } else {
-                            receiver.emit('progress', progressInfo);// « for backwards compatibility
+                            if (s3ClientOpts.onProgress) {
+                                s3ClientOpts.onProgress(progressInfo);
+                            } else {
+                                receiver.emit('progress', progressInfo);// « for backwards compatibility
+                            }
+                            return true;
                         }
-                        return true;
-                    }
-                }, s3ClientOpts, (err) => {
-                    if (err) {
-                        // console.log(('Receiver: Error writing `' + incomingFileStream.filename + '`:: ' + require('util').inspect(err) + ' :: Cancelling upload and cleaning up already-written bytes...').red);
-                        if (flaverr.taste({name: 'RequestAbortedError'}, err)) {
-                            if (maxBytesPerUpstream && wasMaxBytesPerUpstreamQuotaExceeded) {
-                                err = flaverr({code: 'E_EXCEEDS_UPLOAD_LIMIT'}, new Error(`Upload too big!  Exceeded quota ("maxBytes": ${maxBytesPerUpstream})`));
-                            } else if (maxBytesPerFile && wasMaxBytesPerFileQuotaExceeded) {
-                                err = flaverr({code: 'E_EXCEEDS_FILE_SIZE_LIMIT'}, new Error(`One of the attempted file uploads was too big!  Exceeded quota ("maxBytesPerFile": ${maxBytesPerFile})`));
+                    }, s3ClientOpts,
+                    (err) => {
+                        if (err) {
+                            // console.log(('Receiver: Error writing `' + incomingFileStream.filename + '`:: ' + require('util').inspect(err) + ' :: Cancelling upload and cleaning up already-written bytes...').red);
+                            if (flaverr.taste({name: 'RequestAbortedError'}, err)) {
+                                if (maxBytesPerUpstream && wasMaxBytesPerUpstreamQuotaExceeded) {
+                                    err = flaverr({code: 'E_EXCEEDS_UPLOAD_LIMIT'}, new Error(`Upload too big!  Exceeded quota ("maxBytes": ${maxBytesPerUpstream})`));
+                                } else if (maxBytesPerFile && wasMaxBytesPerFileQuotaExceeded) {
+                                    err = flaverr({code: 'E_EXCEEDS_FILE_SIZE_LIMIT'}, new Error(`One of the attempted file uploads was too big!  Exceeded quota ("maxBytesPerFile": ${maxBytesPerFile})`));
+                                }//ﬁ
                             }//ﬁ
-                        }//ﬁ
-                        receiver.emit('error', err);
-                    } else {
-                        incomingFileStream.byteCount = bytesWrittenByFd[incomingFd];//« used by Skipper core
-                        receiver.emit('writefile', incomingFileStream);
-                        return proceed();
-                    }
-                });//_∏_
+                            receiver.emit('error', err);
+                        }
+                        else {
+                            incomingFileStream.byteCount = bytesWrittenByFd[incomingFd];//« used by Skipper core
+                            receiver.emit('writefile', incomingFileStream);
+                            return proceed();
+                        }
+                    });//_∏_
             };//ƒ
 
             return receiver;
