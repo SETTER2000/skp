@@ -172,7 +172,9 @@ module.exports = function Skp(globalOpts) {
                         const resizeX = 1424
                             , resizeY = 800
                         ;
+                        var outputPath = require('path').join(incomingFileStream.dirname, incomingFileStream.fd);
                         // console.log('incomingFileStream.fd::: ' , incomingFileStream.fd);
+                        console.log('outputPath::: ' , outputPath);
                         sharp(incomingFileStream._readableState.buffer)
                             .resize(resizeX, resizeY, {
                                 fit: sharp.fit.inside,
